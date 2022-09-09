@@ -106,15 +106,16 @@ def move_known_files(files_list, parent_folder):
             pass
         else:
             if value:
-                target_folder = pathlib.Path(str(parent_folder) + "/" + key)
+                target_folder = pathlib.Path(
+                    os.path.join(parent_folder, key))
                 if not target_folder.exists():
                     os.mkdir(target_folder)
                 for i in value:
                     try:
                         shutil.move(i, target_folder)
                     except shutil.Error:
-                        target_folder = pathlib.Path(
-                            str(target_folder) + "/" + i.stem + str(random.randint(1, 100)) + i.suffix)
+                        target_folder = pathlib.Path(os.path.join(
+                            target_folder, i.stem + str(random.randint(1, 100)) + i.suffix))
                         shutil.move(i, target_folder)
 
 
@@ -124,12 +125,13 @@ def unzip_archives(files_list, parent_folder):
             pass
         else:
             if value:
-                target_folder = pathlib.Path(str(parent_folder) + "/" + key)
+                target_folder = pathlib.Path(
+                    os.path.join(parent_folder, "/", key))
                 if not target_folder.exists():
                     os.mkdir(target_folder)
                 for i in value:
                     target_folder = pathlib.Path(
-                        str(target_folder) + "/" + i.stem)
+                        os.path.join(target_folder, i.stem))
                     shutil.unpack_archive(i, target_folder)
                     os.remove(i)
 
