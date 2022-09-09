@@ -27,6 +27,10 @@ sorting_folder_path = ""
 
 
 def main():
+    """
+    Скрипт обрабатывает все файлы и папки в указанном каталоге и подкаталогах и нормализирует имена,\
+    собирает все файлы с известными разрешениями в соответствующие папки, а так же удаляет пустые папки.
+    """
     global sorting_folder_path
     sorting_folder_path = folder_address()
     recursive_scan(sorting_folder_path)
