@@ -1,6 +1,6 @@
 import os
 import shutil
-import pathlib
+from pathlib import Path
 import re
 import string
 import sys
@@ -43,27 +43,23 @@ def main():
 
 
 def folder_address():
-    if len(sys.argv) > 2:
+    if len(sys.argv) == 1:
+        if input("I'll sort content of current folder, OK?\nEnter 'Y' to continue or 'N' to close me ") in ("Y", "y"):
+            return Path()
+        else:
+            sys.exit()
+    elif Path((sys.argv[1])).exists():
+        return Path(sys.argv[1])
+    else:
         print("Please restart script and specify correct folder address")
         sys.exit()
-    elif len(sys.argv) == 2 and os.path.exists(pathlib.Path((sys.argv[1]))):
-        if os.path.exists(pathlib.Path((sys.argv[1]))):
-            return pathlib.Path(sys.argv[1])
-        else:
-            print("Please restart script and specify correct folder address")
-            sys.exit()
-    elif len(sys.argv) == 1:
-        if input("I'll sort content of current folder, OK?\nEnter 'Y' to continue or 'N' to close me ") in ("Y", "y"):
-            return pathlib.Path()
-        else:
-            sys.exit()
 
 
 def recursive_scan(path):
     if path.is_dir() and path.stem not in IGNORE_LIST:
         if next(os.scandir(path), None) == None:
             list_of_items['empty_folders'].append(path)
-        if re.search(r'(?i)[^{}{}_]'.format(string.ascii_letters, string.digits), path.stem) and path != pathlib.Path(sorting_folder_path):
+        if re.search(r'(?i)[^{}{}_]'.format(string.ascii_letters, string.digits), path.stem) and path != Path(sorting_folder_path):
             list_of_items['rename'].append(path)
         for element in path.iterdir():
             recursive_scan(element)
@@ -102,11 +98,9 @@ def remove_empty_folders(path):
 
 def move_known_files(files_list, parent_folder):
     for key, value in files_list.items():
-        if key in ("empty_folders", "archives", "unknown", "rename"):
-            pass
-        else:
+        if key not in ("empty_folders", "archives", "unknown", "rename"):
             if value:
-                target_folder = pathlib.Path(
+                target_folder = Path(
                     os.path.join(parent_folder, key))
                 if not target_folder.exists():
                     os.mkdir(target_folder)
@@ -114,23 +108,21 @@ def move_known_files(files_list, parent_folder):
                     try:
                         shutil.move(i, target_folder)
                     except shutil.Error:
-                        target_folder = pathlib.Path(os.path.join(
+                        target_folder = Path(os.path.join(
                             target_folder, i.stem + str(random.randint(1, 100)) + i.suffix))
                         shutil.move(i, target_folder)
 
 
 def unzip_archives(files_list, parent_folder):
     for key, value in files_list.items():
-        if key not in ("archives"):
-            pass
-        else:
+        if key in ("archives"):
             if value:
-                target_folder = pathlib.Path(
-                    os.path.join(parent_folder, "/", key))
+                target_folder = Path(
+                    os.path.join(parent_folder, key))
                 if not target_folder.exists():
                     os.mkdir(target_folder)
                 for i in value:
-                    target_folder = pathlib.Path(
+                    target_folder = Path(
                         os.path.join(target_folder, i.stem))
                     shutil.unpack_archive(i, target_folder)
                     os.remove(i)
@@ -146,7 +138,7 @@ def normalize(files_list):
             transliterated = old_name.stem.translate(TRANS)
             normalized_name = re.sub(r'(?i)[^{}{}]'.format(
                 string.ascii_letters, string.digits), "_", transliterated)
-            new_path = pathlib.Path(
+            new_path = Path(
                 str(re.sub(r'{}'.format(old_name.stem), normalized_name, str(old_name))))
             os.rename(old_name, new_path)
     for i in files_list['rename']:
